@@ -1,8 +1,18 @@
+-- SEPA gets bitstream noise from NOISE and puts
+-- out vectors of N random bits.
+-- CLK		: in  - clock input
+-- RESET 	: in  - flush register, active high
+-- ENABLE 	: in  - enable NOISE 
+-- READY	: out - new word ready, active high
+-- I_OUT	: out - debug signal
+
+----------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
----------------------------------------------------
+----------------------------------------------------
 
 entity SEPA is
 	generic(N : natural :=128);
@@ -13,7 +23,7 @@ entity SEPA is
 	);
 end SEPA;
 
----------------------------------------------------
+----------------------------------------------------
 
 architecture BEHAV of SEPA is
 

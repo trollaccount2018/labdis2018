@@ -1,6 +1,13 @@
+-- NOISE holds N ring oscillators. The ROs' outputs are XORed
+-- and sample to generate a CLK synchronized bitstream.
+
+---------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_misc.all;
+
+---------------------------------------------------------------
 
 entity NOISE is
 	generic (N: integer:=733);
@@ -9,6 +16,8 @@ entity NOISE is
 		NOISE_enRO : in std_logic;
 		NOISE_out : out std_logic);
 end NOISE;
+
+---------------------------------------------------------------
 
 architecture DATAFLOW of NOISE is
 

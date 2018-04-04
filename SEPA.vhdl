@@ -4,7 +4,7 @@
 -- RESET 	: in  - flush register, active high
 -- ENABLE 	: in  - enable NOISE 
 -- READY	: out - new word ready, active high
--- I_OUT	: out - debug signal
+-- (I_OUT	: out - debug signal)
 
 ----------------------------------------------------
 

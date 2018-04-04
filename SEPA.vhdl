@@ -10,7 +10,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+--use ieee.numeric_std.all;
 
 ----------------------------------------------------
 
@@ -18,8 +18,8 @@ entity SEPA is
 	generic(N : natural :=128);
 	port(	CLK, RESET, ENABLE: in std_logic;
 		REG: out std_logic_vector(N-1 downto 0);
-		READY : out std_logic;
-		I_OUT : out std_logic_vector(7 downto 0)
+		READY : out std_logic
+		--I_OUT : out std_logic_vector(7 downto 0)
 	);
 end SEPA;
 
@@ -56,7 +56,7 @@ begin
 				READY <='0';
 			end if;
 		end if;
-		I_OUT<=std_logic_vector(to_unsigned(i,8));
+		--I_OUT<=std_logic_vector(to_unsigned(i,8));
 	end process P1;
 
 	REG<=INTREG;

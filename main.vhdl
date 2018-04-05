@@ -70,9 +70,11 @@ begin
 	process (clk)
 	variable state: std_logic := '0'; -- 0: sample, 1: send;
 	variable i: integer := 0;
+	variable cekaj1: std_logic := '0';
+	variable cekaj2: std_logic := '0';
 	begin
            	if (clk'event and clk='1') then
-			if(state='0') then
+			if(state='0' and cekaj1 = '0' and cekaj2 = '0') then
 				-- 0: sample,
                     		sig_NOISE_enable <= '1'; -- enable noise generation
 				sig_UART_send <= '0'; 
@@ -84,7 +86,7 @@ begin
                    		end if;
                		end if;
                 
-                	if(state='1') then
+                	if(state='1' and cekaj1 = '0' and cekaj2 = '0') then
 				--  1: send
 				if(sig_UART_ready = '0') then -- UART busy
 					sig_UART_send <= '0';
@@ -94,12 +96,24 @@ begin
 					sig_data <= sig_NOISE_REG(8*(i)-1 downto 8*(i)-8);
 					i := i+1;
 					sig_UART_send <= '1';
+					cekaj1 := '1';
+					cekaj2 := '1';
                     		end if;
                     
 				if (i = m/8) then -- number fully transmitted
                         		state := '0';
                     		end if;
                 	end if;
+
+			if(cekaj1 = '1') then
+				cekaj1 := '0';
+				LED(4) <= '1';
+			else
+				if(cekaj2 = '1') then
+					cekaj2 := '0';
+					LED(4) <= '0';
+				end if;
+			end if;
             	end if;
 	end process;
 

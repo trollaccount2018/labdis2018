@@ -1,29 +1,36 @@
 #------------------------------------------------------------------------------
 #
-# Synthesis script for 7-segment display using Digilent Nexys 4 DDR board
+# Synthesis script for TRNG using Digilent Nexys 4 DDR board
 #
 # -----------------------------------------------------------------------------
 #
-create_project -part xc7a100t -force noise1
+create_project -part xc7a100t -force main
 #
 # -----------------------------------------------------------------------------
 #
-read_vhdl ro1.vhdl
+read_vhdl rng1.vhdl
 read_vhdl noise1.vhdl
-#read_xdc  noise1.xdc
+read_vhdl SEPA.vhdl
+read_vhdl uart_tx.vhd
+read_vhdl main.vhdl
+
+read_xdc  main.xdc
+
 #
 # -----------------------------------------------------------------------------
 #
-synth_design -top NOISE
+synth_design -top main
 #
 # -----------------------------------------------------------------------------
 #
+
 opt_design
-#place_design
-#route_design
+place_design
+route_design
+
 #
 # -----------------------------------------------------------------------------
 #
-#write_bitstream -force noise1.bit
+write_bitstream -force main.bit
 #
 # -----------------------------------------------------------------------------

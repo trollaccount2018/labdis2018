@@ -1,14 +1,24 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+
 entity main is
 	generic (m : natural :=128);
 	port (
 		CLK		: in std_logic;
-		TX		: out std_logic;
+		UART_TX_PIN	: out std_logic;
+		LED		: out std_logic_vector(7 downto 0)
 		--tx_data	: out std_logic_vector(8 downto 0);
 		--ready		: in std_logic;
 		--tx_ready	: in std_logic;
 		--r		: in std_logic_vector(m downto 0)
 	);
 end main;
+
+----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
 
 architecture behaviour of main is
 	component uart_tx is
@@ -26,57 +36,72 @@ architecture behaviour of main is
        	 	);
     	end component;
 
-   	component NOISE is
-	    	generic (N: integer:=733);
-		port (
-			NOISE_clk : in std_logic;
-			NOISE_enRO : in std_logic;
-			NOISE_out : out std_logic);
+   	component SEPA is
+		generic(N : natural :=128);
+		port(	CLK, RESET, ENABLE: in std_logic;
+			REG: out std_logic_vector(N-1 downto 0);
+			READY : out std_logic
+			--I_OUT : out std_logic_vector(7 downto 0)
 		);
+	end component;
 
-	signal sig_send : std_logic;
-	signal sig_rst : std_logic;
-	signal sig_enable : std_logic;
+	signal sig_UART_send : std_logic;
+	signal sig_UART_rst : std_logic;
+	signal sig_NOISE_enable : std_logic;
 	signal sig_noise : std_logic;
-	signal sig_ready : std_logic;
+	signal sig_UART_ready : std_logic;
+	signal sig_NOISE_REG : std_logic_vector(m-1 downto 0);
+	signal sig_NOISE_ready : std_logic;
+	signal sig_data :std_logic_vector(7 downto 0);
 
 begin
+	-- instantiate UART
+        usart: uart_tx
+		generic map( 100E6, 9600)
+		port map (clk, sig_UART_rst, sig_UART_send, sig_data, sig_UART_ready, UART_TX_PIN);
+
+	-- instantiate noise generation
+	serpar:SEPA
+		generic map (128)
+		port map (CLK, sig_UART_rst, sig_NOISE_enable, sig_NOISE_REG, sig_NOISE_ready);
+
+
 	process (clk)
 	variable state: std_logic := '0'; -- 0: sample, 1: send;
-	variable i: integer : = 0;
+	variable i: integer := 0;
 	begin
-		-- instantiate UART
-            	usart: uart_tx
-			generic map( 100E6, 9600)
-			port map (clk, sig_rst, sig_send, x_data, sig_ready, TX);
-
-		-- instantiate noise generation
-	    	nois1: noise
-			generic map(733)
-			port map (CLK,sig_enable,sig_noise);
-
            	if (clk'event and clk='1') then
                 	if(state='0') then
 				-- 0: sample,
-                    		sig_enable <= '1'; -- enable noise generation
+                    		sig_NOISE_enable <= '1'; -- enable noise generation
                 
-                    		if(ready = '1') then -- UART ready
-                    	    		enable <= '0'; 
-                    	    		state := 1;
+                    		if(sig_UART_ready = '1') then -- UART ready
+                    	    		sig_NOISE_enable <= '0'; 
+                    	    		state := '1';
+					i := 1;
                    		end if;
                		end if;
                 
                 	if(state='1') then
 				--  1: send
-                   		if(sig_ready = '1') then
-                       			data <= r(8*(i)-1 downto 8*(i)-8);
+                   		if(sig_NOISE_ready = '1') then
+                       			sig_data <= sig_NOISE_REG(8*(i)-1 downto 8*(i)-8);
 					i := i+1;
+					sig_UART_send <= '1';
                     		end if;
                     
 				if (i = m/8) then
-                        		state := 0;
+                        		state := '0';
+					sig_UART_send <= '0';
                     		end if;
                 	end if;
             	end if;
 	end process;
+
+	-- LEDs for debugging
+	--LED(0) <= sig_NOISE_enable;
+	--LED(1) <= sig_UART_ready;
+	--LED(2) <= sig_UART_send;
+	LED<=sig_NOISE_REG(7 downto 0);
+
 end behaviour;

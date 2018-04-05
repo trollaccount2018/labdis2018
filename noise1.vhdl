@@ -22,6 +22,7 @@ end NOISE;
 architecture DATAFLOW of NOISE is
 
 	component RO is
+		generic (N: integer:=101);
 		port(	RO_enable : in std_logic;
 			RO_out : out std_logic);
 	end component;

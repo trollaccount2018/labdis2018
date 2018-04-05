@@ -13,8 +13,8 @@ begin
 	NBIT: for I in 1 to N generate
 		INTERCON(I) <= not INTERCON(I-1);
 	end generate NBIT;
-	INTERCON(0) <= (not INTERCON(N)) and RO_enable;
-	
+	--INTERCON(0) <= (not INTERCON(N)) and RO_enable;
+	INTERCON(0) <= not INTERCON(N);
 	RO_out <= INTERCON(0);
 end DATAFLOW;
 

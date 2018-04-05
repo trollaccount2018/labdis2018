@@ -9,7 +9,8 @@ entity main is
 	port (
 		CLK		: in std_logic;
 		UART_TX_PIN	: out std_logic;
-		LED		: out std_logic_vector(7 downto 0)
+		LED		: out std_logic_vector(7 downto 0);
+		RST		: in std_logic
 		--tx_data	: out std_logic_vector(8 downto 0);
 		--ready		: in std_logic;
 		--tx_ready	: in std_logic;
@@ -71,12 +72,13 @@ begin
 	variable i: integer := 0;
 	begin
            	if (clk'event and clk='1') then
-                	if(state='0') then
+			if(state='0') then
 				-- 0: sample,
                     		sig_NOISE_enable <= '1'; -- enable noise generation
+				sig_UART_send <= '0'; 
                 
-                    		if(sig_UART_ready = '1') then -- UART ready
-                    	    		sig_NOISE_enable <= '0'; 
+                    		if(sig_NOISE_ready = '1') then -- number ready
+					sig_NOISE_enable <= '0'; -- disable noise generation
                     	    		state := '1';
 					i := 1;
                    		end if;
@@ -84,24 +86,30 @@ begin
                 
                 	if(state='1') then
 				--  1: send
-                   		if(sig_NOISE_ready = '1') then
-                       			sig_data <= sig_NOISE_REG(8*(i)-1 downto 8*(i)-8);
+				if(sig_UART_ready = '0') then -- UART busy
+					sig_UART_send <= '0';
+				end if;
+
+                   		if(sig_UART_ready = '1') then -- UART ready, send next byte
+					sig_data <= sig_NOISE_REG(8*(i)-1 downto 8*(i)-8);
 					i := i+1;
 					sig_UART_send <= '1';
                     		end if;
                     
-				if (i = m/8) then
+				if (i = m/8) then -- number fully transmitted
                         		state := '0';
-					sig_UART_send <= '0';
                     		end if;
                 	end if;
             	end if;
 	end process;
 
+	sig_UART_rst <= RST;
+
 	-- LEDs for debugging
-	--LED(0) <= sig_NOISE_enable;
-	--LED(1) <= sig_UART_ready;
-	--LED(2) <= sig_UART_send;
-	LED<=sig_NOISE_REG(7 downto 0);
+	LED(0) <= sig_NOISE_ready;
+	LED(1) <= sig_NOISE_enable;
+	LED(2) <= sig_UART_ready;
+	LED(3) <= sig_UART_send;
+	--LED<=sig_NOISE_REG(7 downto 0);
 
 end behaviour;

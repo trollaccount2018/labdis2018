@@ -1,8 +1,9 @@
 entity main is
 	generic (m : natural :=128);
 	port (
-		CLK		: out std_logic;
-		--tx_data		: out std_logic_vector(8 downto 0);
+		CLK		: in std_logic;
+		TX		: out std_logic;
+		--tx_data	: out std_logic_vector(8 downto 0);
 		--ready		: in std_logic;
 		--tx_ready	: in std_logic;
 		--r		: in std_logic_vector(m downto 0)
@@ -37,39 +38,45 @@ architecture behaviour of main is
 	signal sig_rst : std_logic;
 	signal sig_enable : std_logic;
 	signal sig_noise : std_logic;
+	signal sig_ready : std_logic;
 
 begin
 	process (clk)
 	variable state: std_logic := '0'; -- 0: sample, 1: send;
+	variable i: integer : = 0;
 	begin
 		-- instantiate UART
-            	usart: uart_tx generic map( 100E6, 9600) port map (clk, sig_rst, sig_send, x_data, rdy => tx_ready);
+            	usart: uart_tx
+			generic map( 100E6, 9600)
+			port map (clk, sig_rst, sig_send, x_data, sig_ready, TX);
 
 		-- instantiate noise generation
-	    	nois1: noise generic map(733) port map (CLK,sig_enable,sig_noise);
+	    	nois1: noise
+			generic map(733)
+			port map (CLK,sig_enable,sig_noise);
 
            	if (clk'event and clk='1') then
                 	if(state='0') then
 				-- 0: sample,
-                    		sig_enable <= '1';
+                    		sig_enable <= '1'; -- enable noise generation
                 
-                    		if(ready = '1') then
-                    	    		enable <= '0';
+                    		if(ready = '1') then -- UART ready
+                    	    		enable <= '0'; 
                     	    		state := 1;
                    		end if;
                		end if;
                 
                 	if(state='1') then
-			--  1: send
-                   		if(rdy='1') then
+				--  1: send
+                   		if(sig_ready = '1') then
                        			data <= r(8*(i)-1 downto 8*(i)-8);
 					i := i+1;
                     		end if;
                     
-                    		i(i = m/8) then
-                        	state := 0;
-                    	end if;
-                end if;
-            end if;
+				if (i = m/8) then
+                        		state := 0;
+                    		end if;
+                	end if;
+            	end if;
 	end process;
 end behaviour;

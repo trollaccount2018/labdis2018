@@ -13,9 +13,15 @@ begin
 	NBIT: for I in 1 to N generate
 		INTERCON(I) <= not INTERCON(I-1);
 	end generate NBIT;
+	
+	--gated
 	--INTERCON(0) <= (not INTERCON(N)) and RO_enable;
+	
+	-- not gated
 	INTERCON(0) <= not INTERCON(N);
+	
 	RO_out <= INTERCON(0);
+	--RO_out <= '1';
 end DATAFLOW;
 
 	

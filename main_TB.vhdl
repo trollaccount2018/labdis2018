@@ -10,7 +10,8 @@ architecture TESTBENCH of main_TB is
 		port ( 	CLK		: in std_logic;
 			UART_TX_PIN	: out std_logic;
 			LED		: out std_logic_vector(7 downto 0);
-			RST		: in std_logic
+			RST		: in std_logic;
+			BTNR	: in std_logic
 		);
 	end component;
 
@@ -18,12 +19,14 @@ architecture TESTBENCH of main_TB is
 	signal UART_TX_PIN : std_logic;
 	signal LED : std_logic_vector(7 downto 0);
 	signal RST : std_logic := '0';
+	signal BTNR: std_logic := '0';
 
 begin
 	CLK <= not CLK after 5 ns;
 	RST <= '1', '0' after 5 ns;
+	BTNR <= '1';
 
-	DUT: main generic map (128) port map (CLK,UART_TX_PIN,LED,RST);
+	DUT: main generic map (128) port map (CLK,UART_TX_PIN,LED,RST,BTNR);
 	
 end TESTBENCH;
 

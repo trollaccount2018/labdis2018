@@ -18,7 +18,8 @@ entity SEPA is
 	generic(N : natural :=128);
 	port(	CLK, RESET, ENABLE: in std_logic;
 		REG: out std_logic_vector(N-1 downto 0);
-		READY : out std_logic
+		READY : out std_logic;
+		DIAG : out std_logic
 		--I_OUT : out std_logic_vector(7 downto 0)
 	);
 end SEPA;
@@ -35,11 +36,13 @@ component NOISE is
 	port (
 		NOISE_clk : in std_logic;
 		NOISE_enRO : in std_logic;
-		NOISE_out : out std_logic);
+		NOISE_out : out std_logic;
+		diag : out std_logic
+		);
 end component;
 
 begin
-	NOISE1: NOISE generic map(733) port map (CLK,ENABLE,SIG_NOISE);
+	NOISE1: NOISE generic map(733) port map (CLK,ENABLE,SIG_NOISE,DIAG);
 	P1: process(CLK, RESET)
 	variable i : integer := 0;
 	begin
@@ -60,7 +63,9 @@ begin
 		--I_OUT<=std_logic_vector(to_unsigned(i,8));
 	end process P1;
 
-	--REG<=INTREG;
-	REG <= "01000001010000100100001101000100010001010100011001000111010010000100100101001010010010110100110001001101010011100100111101010000";
+	REG<=INTREG;
+
+	--for debugging
+	--REG <= "01000001010000100100001101000100010001010100011001000111010010000100100101001010010010110100110001001101010011100100111101010000";
 	
 end BEHAV;

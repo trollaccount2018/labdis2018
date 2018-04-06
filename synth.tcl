@@ -9,8 +9,8 @@ create_project -part xc7a100t -force main
 # -----------------------------------------------------------------------------
 #
 
-#read_vhdl rng1.vhdl
-read_vhdl noise_test.vhdl
+read_vhdl rng1.vhdl
+read_vhdl noise1.vhdl -vhdl2008
 read_vhdl SEPA.vhdl
 read_vhdl uart_tx.vhd
 read_vhdl main.vhdl

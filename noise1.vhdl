@@ -11,10 +11,12 @@ use ieee.std_logic_misc.all;
 
 entity NOISE is
 	generic (N: integer:=733);
+	--generic (N: integer:=30);	
 	port (
 		NOISE_clk : in std_logic;
 		NOISE_enRO : in std_logic;
-		NOISE_out : out std_logic);
+		NOISE_out : out std_logic;
+		diag : out std_logic);
 end NOISE;
 
 ---------------------------------------------------------------
@@ -30,6 +32,7 @@ architecture DATAFLOW of NOISE is
 	signal INTERCON: std_logic_vector(N downto 0);
 	signal XORSIG: std_logic;
 	signal DFF_OUT: std_logic;
+	signal sig_diag: std_logic := '0';
 begin
 	-- Instantiate ring oscillators
 	-- NOISE_enRO is passed to individual ROs as an enable
@@ -38,16 +41,25 @@ begin
 	end generate NBIT;
 
 	-- XOR outputs
-	XORSIG <= xor_reduce(INTERCON);
+	--XORSIG <= xor_reduce(INTERCON);
 
+	-- XOR disabled for debugging, using VHDL2008 style OR instead
+	XORSIG <= or INTERCON;
+	
 	-- D-FF
 	DFF: process (NOISE_clk)
 	begin
 		if NOISE_clk'event and NOISE_clk = '1' then
 			DFF_OUT <= XORSIG;
+			if(XORSIG = '1') then
+				sig_diag <= '1';
+			end if;
 		end if;
 	end process DFF;
 
 	NOISE_out <= DFF_OUT;
+
+	-- diagnosis port for debugging
+	diag <= sig_diag;
 
 end DATAFLOW;

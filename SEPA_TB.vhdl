@@ -20,8 +20,8 @@ architecture TESTBENCH of SEPA_TB is
 	signal READY : std_logic;
 	signal REG : std_logic_vector(127 downto 0);
 begin
-	CLK <= not CLK after 10 ns;
-	RESET <= '1', '0' after 20 ns;
+	CLK <= not CLK after 5 ns;
+	RESET <= '1', '0' after 10 ns;
 	ENABLE <= '1';
 
 	DUT: SEPA generic map (N) port map(CLK,RESET,ENABLE,REG,READY);

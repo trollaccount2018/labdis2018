@@ -12,10 +12,6 @@ entity main is
 		LED		: out std_logic_vector(7 downto 0);
 		RST		: in std_logic;
 		BTNR		: in std_logic
-		--tx_data	: out std_logic_vector(8 downto 0);
-		--ready		: in std_logic;
-		--tx_ready	: in std_logic;
-		--r		: in std_logic_vector(m downto 0)
 	);
 end main;
 
@@ -44,7 +40,6 @@ architecture behaviour of main is
 			REG: out std_logic_vector(N-1 downto 0);
 			READY : out std_logic;
 			DIAG : out std_logic
-			--I_OUT : out std_logic_vector(7 downto 0)
 		);
 	end component;
 
@@ -57,6 +52,9 @@ architecture behaviour of main is
 	signal sig_NOISE_ready : std_logic;
 	signal sig_data :std_logic_vector(7 downto 0);
 	signal sig_DIAG : std_logic;
+
+	--debugging
+	signal INTERCON : std_logic_vector(733 downto 0);
 
 begin
 	-- instantiate UART
@@ -77,6 +75,12 @@ begin
 	variable wait2: std_logic := '0';
 	begin
            	if (clk'event and clk='1') then
+
+			--debugging!
+			if(BTNR = '1') then
+				LED <= INTERCON(7 downto 0);
+			end if;
+
 			if(state='0' and wait1 = '0' and wait2 = '0' and BTNR = '1') then
 				-- 0: sample,
                     		sig_NOISE_enable <= '1'; -- enable noise generation
@@ -122,14 +126,19 @@ begin
             	end if;
 	end process;
 
-	sig_UART_rst <= RST;
+	--debugging!!!
+	NBIT: for I in 1 to 733 generate
+		INTERCON(I) <= not INTERCON(I-1);
+	end generate NBIT;
+	INTERCON(0) <= not INTERCON(733);
 
+	sig_UART_rst <= RST;
+	
 	-- LEDs for debugging
-	LED(0) <= sig_DIAG;
+	--LED(0) <= sig_DIAG;
 	--LED(0) <= sig_NOISE_ready;
 	--LED(1) <= sig_NOISE_enable;
 	--LED(2) <= sig_UART_ready;
 	--LED(3) <= sig_UART_send;
-	--LED<=sig_NOISE_REG(7 downto 0);
 
 end behaviour;

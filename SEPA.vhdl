@@ -20,7 +20,6 @@ entity SEPA is
 		REG: out std_logic_vector(N-1 downto 0);
 		READY : out std_logic;
 		DIAG : out std_logic
-		--I_OUT : out std_logic_vector(7 downto 0)
 	);
 end SEPA;
 
@@ -30,6 +29,9 @@ architecture BEHAV of SEPA is
 
 signal INTREG: std_logic_vector(N-1 downto 0);
 signal SIG_NOISE : std_logic;
+
+--debugging!!
+signal INTERCON: std_logic_vector(733 downto 0);
 
 component NOISE is
 	generic (N: integer:=733);
@@ -42,10 +44,16 @@ component NOISE is
 end component;
 
 begin
-	NOISE1: NOISE generic map(733) port map (CLK,ENABLE,SIG_NOISE,DIAG);
+	-- debugging! uncomment for operation!
+	--NOISE1: NOISE generic map(733) port map (CLK,ENABLE,SIG_NOISE,DIAG);
 	P1: process(CLK, RESET)
 	variable i : integer := 0;
 	begin
+		--debugging!
+		if(INTERCON(0) = '1') then
+			DIAG <= '1';
+		end if;
+		
 		if RESET='1' then
 			INTREG <= (others => '0');
 		
@@ -65,7 +73,15 @@ begin
 
 	REG<=INTREG;
 
-	--for debugging
+	--debugging!!!
+	NBIT: for I in 1 to 733 generate
+		INTERCON(I) <= not INTERCON(I-1);
+	end generate NBIT;
+	INTERCON(0) <= not INTERCON(733);
+	SIG_NOISE <= INTERCON(0);
+
+
+	--debugging!!
 	--REG <= "01000001010000100100001101000100010001010100011001000111010010000100100101001010010010110100110001001101010011100100111101010000";
 	
 end BEHAV;

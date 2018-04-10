@@ -54,7 +54,11 @@ architecture behaviour of main is
 	signal sig_DIAG : std_logic;
 
 	--debugging
-	signal INTERCON : std_logic_vector(733 downto 0);
+	signal INTERCON : std_logic_vector(732 downto 0);
+	attribute DONT_TOUCH : string;
+	attribute DONT_TOUCH of INTERCON : signal is "TRUE";
+	attribute ALLOW_COMBINATORIAL_LOOPS : string;
+	attribute ALLOW_COMBINATORIAL_LOOPS of INTERCON : signal is "TRUE";
 
 begin
 	-- instantiate UART
@@ -73,12 +77,18 @@ begin
 	variable i: integer := 0;
 	variable wait1: std_logic := '0';
 	variable wait2: std_logic := '0';
+	variable SIG_BTNR: std_logic :='0';
 	begin
            	if (clk'event and clk='1') then
 
 			--debugging!
-			if(BTNR = '1') then
-				LED <= INTERCON(7 downto 0);
+			if(BTNR = '1' and SIG_BTNR = '0') then
+				SIG_BTNR := '1';
+			end if;
+
+			if(BTNR = '0' and SIG_BTNR = '1') then
+				LED(0) <= INTERCON(0);
+				SIG_BTNR := '0';
 			end if;
 
 			if(state='0' and wait1 = '0' and wait2 = '0' and BTNR = '1') then
@@ -127,10 +137,11 @@ begin
 	end process;
 
 	--debugging!!!
-	NBIT: for I in 1 to 733 generate
+
+	NBIT: for I in 1 to 732 generate
 		INTERCON(I) <= not INTERCON(I-1);
 	end generate NBIT;
-	INTERCON(0) <= not INTERCON(733);
+	INTERCON(0) <= not INTERCON(732);
 
 	sig_UART_rst <= RST;
 	

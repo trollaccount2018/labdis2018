@@ -35,11 +35,20 @@ architecture behaviour of main is
     	end component;
 
    	component SEPA is
-		generic(N : natural :=128);
+		generic(N : natural := m);
 		port(	CLK, RESET, ENABLE: in std_logic;
 			REG: out std_logic_vector(N-1 downto 0);
 			READY : out std_logic
 		);
+	end component;
+
+	component postprocessor is
+		generic ( o : integer := m );
+		port (
+			clk : in std_logic;
+			s   : in std_logic_vector(m-1 downto 0);
+			r   : out std_logic_vector(m-1 downto 0)
+	);
 	end component;
 
 	signal sig_UART_send : std_logic;
@@ -48,6 +57,7 @@ architecture behaviour of main is
 	signal sig_noise : std_logic;
 	signal sig_UART_ready : std_logic;
 	signal sig_NOISE_REG : std_logic_vector(m-1 downto 0);
+	signal sig_PROCESSED : std_logic_vector(m-1 downto 0);
 	signal sig_NOISE_ready : std_logic;
 	signal sig_data :std_logic_vector(7 downto 0);
 	signal sig_DIAG : std_logic;
@@ -61,9 +71,13 @@ begin
 
 	-- instantiate noise generation
 	serpar:SEPA
-		generic map (128)
-		port map (CLK, sig_UART_rst, sig_NOISE_enable, sig_NOISE_REG, sig_NOISE_ready);
+		generic map (m)
+		port map (CLK, sig_UART_rst, sig_NOISE_enable, sig_PROCESSED, sig_NOISE_ready);
 
+	-- instantiate post-processor
+	pproc:POSTPROCESSOR
+		generic map (m)
+		port map (CLK, sig_NOISE_REG, sig_PROCESSED);
 
 	process (clk)
 	variable state: integer := 2; -- 0: sample, 1: send, 2: wait
@@ -103,7 +117,8 @@ begin
 				end if;
 
                    		if(sig_UART_ready = '1') then -- UART ready, send next byte
-					sig_data <= sig_NOISE_REG(8*(i)-1 downto 8*(i)-8);
+					--sig_data <= sig_NOISE_REG(8*(i)-1 downto 8*(i)-8);
+					sig_data <= sig_PROCESSED(8*(i)-1 downto 8*(i)-8);
 					sig_UART_send <= '1';
 					wait1 := '1';
 					wait2 := '1';

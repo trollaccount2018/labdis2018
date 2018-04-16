@@ -8,7 +8,13 @@ entity RO is
 end RO;
 
 architecture DATAFLOW of RO is
+
 	signal INTERCON: std_logic_vector(N downto 0);
+	attribute DONT_TOUCH : string;
+	attribute DONT_TOUCH of INTERCON : signal is "TRUE";
+	attribute ALLOW_COMBINATORIAL_LOOPS : string;
+	attribute ALLOW_COMBINATORIAL_LOOPS of INTERCON : signal is "TRUE";
+
 begin	
 	NBIT: for I in 1 to N generate
 		INTERCON(I) <= not INTERCON(I-1);
@@ -21,6 +27,8 @@ begin
 	INTERCON(0) <= not INTERCON(N);
 	
 	RO_out <= INTERCON(0);
+	
+	--debugging:
 	--RO_out <= '1';
 end DATAFLOW;
 

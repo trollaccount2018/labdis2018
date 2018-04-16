@@ -38,8 +38,7 @@ architecture behaviour of main is
 		generic(N : natural :=128);
 		port(	CLK, RESET, ENABLE: in std_logic;
 			REG: out std_logic_vector(N-1 downto 0);
-			READY : out std_logic;
-			DIAG : out std_logic
+			READY : out std_logic
 		);
 	end component;
 
@@ -54,11 +53,11 @@ architecture behaviour of main is
 	signal sig_DIAG : std_logic;
 
 	--debugging
-	signal INTERCON : std_logic_vector(732 downto 0);
-	attribute DONT_TOUCH : string;
-	attribute DONT_TOUCH of INTERCON : signal is "TRUE";
-	attribute ALLOW_COMBINATORIAL_LOOPS : string;
-	attribute ALLOW_COMBINATORIAL_LOOPS of INTERCON : signal is "TRUE";
+	--signal INTERCON : std_logic_vector(732 downto 0);
+	--attribute DONT_TOUCH : string;
+	--attribute DONT_TOUCH of INTERCON : signal is "TRUE";
+	--attribute ALLOW_COMBINATORIAL_LOOPS : string;
+	--attribute ALLOW_COMBINATORIAL_LOOPS of INTERCON : signal is "TRUE";
 
 begin
 	-- instantiate UART
@@ -69,7 +68,7 @@ begin
 	-- instantiate noise generation
 	serpar:SEPA
 		generic map (128)
-		port map (CLK, sig_UART_rst, sig_NOISE_enable, sig_NOISE_REG, sig_NOISE_ready,sig_DIAG);
+		port map (CLK, sig_UART_rst, sig_NOISE_enable, sig_NOISE_REG, sig_NOISE_ready);
 
 
 	process (clk)
@@ -81,15 +80,15 @@ begin
 	begin
            	if (clk'event and clk='1') then
 
-			--debugging!
-			if(BTNR = '1' and SIG_BTNR = '0') then
-				SIG_BTNR := '1';
-			end if;
-
-			if(BTNR = '0' and SIG_BTNR = '1') then
-				LED(0) <= INTERCON(0);
-				SIG_BTNR := '0';
-			end if;
+			--debugging:
+			--if(BTNR = '1' and SIG_BTNR = '0') then
+			--	SIG_BTNR := '1';
+			--end if;
+			--	
+			--if(BTNR = '0' and SIG_BTNR = '1') then
+			--	LED(0) <= INTERCON(0);
+			--	SIG_BTNR := '0';
+			--end if;
 
 			if(state='0' and wait1 = '0' and wait2 = '0' and BTNR = '1') then
 				-- 0: sample,
@@ -122,7 +121,7 @@ begin
                     		end if;
                 	end if;
 			
-			-- Give UART a chance to signal busy
+			-- Give UART a chance to signal 'busy'
 			if(wait1 = '1') then
 				wait1 := '0';
 				--LED(4) <= '1';
@@ -136,12 +135,11 @@ begin
             	end if;
 	end process;
 
-	--debugging!!!
-
-	NBIT: for I in 1 to 732 generate
-		INTERCON(I) <= not INTERCON(I-1);
-	end generate NBIT;
-	INTERCON(0) <= not INTERCON(732);
+	--debugging:
+	--NBIT: for I in 1 to 732 generate
+	--	INTERCON(I) <= not INTERCON(I-1);
+	--end generate NBIT;
+	--INTERCON(0) <= not INTERCON(732);
 
 	sig_UART_rst <= RST;
 	

@@ -10,8 +10,8 @@ use ieee.std_logic_1164.all;
 ---------------------------------------------------------------
 
 entity NOISE is
-	generic (N: integer:=733);
-	--generic (N: integer:=30);	
+	--generic (N: integer:=733);
+	generic (N: integer:=30);	
 	port (
 		NOISE_clk : in std_logic;
 		NOISE_enRO : in std_logic;

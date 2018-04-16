@@ -52,12 +52,6 @@ architecture behaviour of main is
 	signal sig_data :std_logic_vector(7 downto 0);
 	signal sig_DIAG : std_logic;
 
-	--debugging
-	--signal INTERCON : std_logic_vector(732 downto 0);
-	--attribute DONT_TOUCH : string;
-	--attribute DONT_TOUCH of INTERCON : signal is "TRUE";
-	--attribute ALLOW_COMBINATORIAL_LOOPS : string;
-	--attribute ALLOW_COMBINATORIAL_LOOPS of INTERCON : signal is "TRUE";
 
 begin
 	-- instantiate UART
@@ -72,7 +66,7 @@ begin
 
 
 	process (clk)
-	variable state: std_logic := '0'; -- 0: sample, 1: send;
+	variable state: integer := 2; -- 0: sample, 1: send, 2: wait
 	variable i: integer := 0;
 	variable wait1: std_logic := '0';
 	variable wait2: std_logic := '0';
@@ -80,29 +74,29 @@ begin
 	begin
            	if (clk'event and clk='1') then
 
-			--debugging:
-			--if(BTNR = '1' and SIG_BTNR = '0') then
-			--	SIG_BTNR := '1';
-			--end if;
-			--	
-			--if(BTNR = '0' and SIG_BTNR = '1') then
-			--	LED(0) <= INTERCON(0);
-			--	SIG_BTNR := '0';
-			--end if;
+			--Entprellen:
+			if(BTNR = '1' and SIG_BTNR = '0') then
+				SIG_BTNR := '1';
+			end if;
+				
+			if(BTNR = '0' and SIG_BTNR = '1') then
+				state:=0; -- sample!
+				SIG_BTNR := '0';
+			end if;
 
-			if(state='0' and wait1 = '0' and wait2 = '0' and BTNR = '1') then
+			if(state=0 and wait1 = '0' and wait2 = '0') then
 				-- 0: sample,
                     		sig_NOISE_enable <= '1'; -- enable noise generation
 				sig_UART_send <= '0'; 
                 
                     		if(sig_NOISE_ready = '1') then -- number ready
 					sig_NOISE_enable <= '0'; -- disable noise generation
-                    	    		state := '1';
+                    	    		state := 1;
 					i := 1;
                    		end if;
                		end if;
                 
-                	if(state='1' and wait1 = '0' and wait2 = '0') then
+                	if(state=1 and wait1 = '0' and wait2 = '0') then
 				--  1: send
 				if(sig_UART_ready = '0') then -- UART busy
 					sig_UART_send <= '0';
@@ -110,14 +104,13 @@ begin
 
                    		if(sig_UART_ready = '1') then -- UART ready, send next byte
 					sig_data <= sig_NOISE_REG(8*(i)-1 downto 8*(i)-8);
-					--i := i+1;
 					sig_UART_send <= '1';
 					wait1 := '1';
 					wait2 := '1';
                     		end if;
                     
-				if (i = m/8) then -- number fully transmitted
-                        		state := '0';
+				if (i = m/8+1) then -- number fully transmitted
+                        		state := 2;
                     		end if;
                 	end if;
 			

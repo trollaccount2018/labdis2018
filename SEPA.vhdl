@@ -34,7 +34,7 @@ signal SIG_NOISE : std_logic;
 --signal INTERCON: std_logic_vector(733 downto 0);
 
 component NOISE is
-	generic (N: integer:=733);
+	generic (M: integer:=733);
 	port (
 		NOISE_clk : in std_logic;
 		NOISE_enRO : in std_logic;

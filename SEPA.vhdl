@@ -15,7 +15,7 @@ use ieee.std_logic_1164.all;
 ----------------------------------------------------
 
 entity SEPA is
-	generic(N : natural :=128);
+	generic(N : natural :=128; R : natural := 733 );
 	port(	CLK, RESET, ENABLE: in std_logic;
 		REG: out std_logic_vector(N-1 downto 0);
 		READY : out std_logic
@@ -44,7 +44,7 @@ component NOISE is
 end component;
 
 begin
-	NOISE1: NOISE generic map(733) port map (CLK,ENABLE,SIG_NOISE);
+	NOISE1: NOISE generic map(R) port map (CLK,ENABLE,SIG_NOISE);
 	P1: process(CLK, RESET)
 	variable i : integer := 0;
 	begin

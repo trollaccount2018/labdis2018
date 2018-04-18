@@ -74,8 +74,7 @@ architecture behaviour of main is
 	signal sig_NOISE_ready : std_logic;
 	signal sig_data :std_logic_vector(7 downto 0);
 	signal sig_DIAG : std_logic;
-	signal sig_DISPLAYBUFFER : std_logic_vector(31 downto 0);
-
+	signal sig_DISPLAYBUFFER : std_logic_vector(31 downto 0) := (others => '0');
 
 begin
 	-- instantiate UART
@@ -86,12 +85,12 @@ begin
 	-- instantiate noise generation
 	serpar:SEPA
 		generic map (m,p)
-		port map (CLK, sig_UART_rst, sig_NOISE_enable, sig_PROCESSED, sig_NOISE_ready);
+		port map (CLK, sig_UART_rst, sig_NOISE_enable, sig_NOISE_REG, sig_NOISE_ready);
 
 	-- instantiate post-processor
 	pproc:POSTPROCESSOR
 		generic map (m)
-		port map (CLK, sig_NOISE_REG, sig_DISPLAYBUFFER);
+		port map (CLK, sig_NOISE_REG, sig_PROCESSED);
 
 	-- instantiate 7seg display
 	sevs:sevendisp
@@ -123,7 +122,11 @@ begin
                 
                     		if(sig_NOISE_ready = '1') then -- number ready
 					sig_NOISE_enable <= '0'; -- disable noise generation
-					sig_DISPLAYBUFFER <= sig_PROCESSED(31 downto 0);
+					if (SW0 = '0') then
+						sig_DISPLAYBUFFER <= sig_PROCESSED(31 downto 0);
+					else
+						sig_DISPLAYBUFFER <= (others => '1');
+					end if;
                     	    		state := 1;
 					i := 1;
                    		end if;

@@ -5,13 +5,16 @@ use ieee.std_logic_1164.all;
 ----------------------------------------------------------------------------------
 
 entity main is
-	generic (m : natural :=128; p : natural := 1); --word width, number of rings
+	generic (m : natural :=128; p : natural := 733); --word width, number of rings
 	port (
 		CLK		: in std_logic;
 		UART_TX_PIN	: out std_logic;
 		LED		: out std_logic_vector(7 downto 0);
 		RST		: in std_logic;
-		BTNR		: in std_logic
+		BTNR		: in std_logic;
+		SW0		: in std_logic;
+		AN		: out std_logic_vector(7 downto 0);
+		CA		: out std_logic_vector(7 downto 0)
 	);
 end main;
 
@@ -51,6 +54,16 @@ architecture behaviour of main is
 	);
 	end component;
 
+	component sevendisp is
+		port (
+			CLK	: in std_logic;
+			INPUT	: in std_logic_vector(31 downto 0);
+			AN	: out std_logic_vector(7 downto 0); -- common anodes
+			CA	: out std_logic_vector(7 downto 0)  -- cathodes
+		);
+	end component;
+
+
 	signal sig_UART_send : std_logic;
 	signal sig_UART_rst : std_logic;
 	signal sig_NOISE_enable : std_logic;
@@ -61,6 +74,7 @@ architecture behaviour of main is
 	signal sig_NOISE_ready : std_logic;
 	signal sig_data :std_logic_vector(7 downto 0);
 	signal sig_DIAG : std_logic;
+	signal sig_DISPLAYBUFFER : std_logic_vector(31 downto 0);
 
 
 begin
@@ -77,7 +91,11 @@ begin
 	-- instantiate post-processor
 	pproc:POSTPROCESSOR
 		generic map (m)
-		port map (CLK, sig_NOISE_REG, sig_PROCESSED);
+		port map (CLK, sig_NOISE_REG, sig_DISPLAYBUFFER);
+
+	-- instantiate 7seg display
+	sevs:sevendisp
+		port map (CLK, sig_DISPLAYBUFFER, AN, CA);
 
 	process (clk)
 	variable state: integer := 2; -- 0: sample, 1: send, 2: wait
@@ -105,6 +123,7 @@ begin
                 
                     		if(sig_NOISE_ready = '1') then -- number ready
 					sig_NOISE_enable <= '0'; -- disable noise generation
+					sig_DISPLAYBUFFER <= sig_PROCESSED(31 downto 0);
                     	    		state := 1;
 					i := 1;
                    		end if;
@@ -125,8 +144,11 @@ begin
                     		end if;
                     
 				if (i = m/8+1) then -- number fully transmitted
-                        		--state := 2;
-								state := 0;
+					if (SW0 = '1') then 	-- test mode
+						state := 0;
+					else			-- productive mode
+						state := 2;
+					end if;
                     		end if;
                 	end if;
 			

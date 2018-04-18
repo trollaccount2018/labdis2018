@@ -5,13 +5,16 @@ use ieee.std_logic_1164.all;
 ----------------------------------------------------------------------------------
 
 entity main is
-	generic (m : natural :=128; p : natural := 1); --word width, number of rings
+	generic (m : natural :=128; p : natural := 733); --word width, number of rings
 	port (
 		CLK		: in std_logic;
 		UART_TX_PIN	: out std_logic;
 		LED		: out std_logic_vector(7 downto 0);
 		RST		: in std_logic;
-		BTNR		: in std_logic
+		BTNR		: in std_logic;
+		SW0		: in std_logic;
+		AN		: out std_logic_vector(7 downto 0);
+		CA		: out std_logic_vector(7 downto 0)
 	);
 end main;
 
@@ -51,6 +54,17 @@ architecture behaviour of main is
 	);
 	end component;
 
+	component sevendisp is
+		port (
+			CLK	: in std_logic;
+			INPUT	: in std_logic_vector(31 downto 0);
+			AN	: out std_logic_vector(7 downto 0); -- common anodes
+			CA	: out std_logic_vector(7 downto 0);  -- cathodes
+			ENABLE 	: in std_logic
+		);
+	end component;
+
+
 	signal sig_UART_send : std_logic;
 	signal sig_UART_rst : std_logic;
 	signal sig_NOISE_enable : std_logic;
@@ -61,7 +75,8 @@ architecture behaviour of main is
 	signal sig_NOISE_ready : std_logic;
 	signal sig_data :std_logic_vector(7 downto 0);
 	signal sig_DIAG : std_logic;
-
+	signal sig_DISPLAYBUFFER : std_logic_vector(31 downto 0) := (others => '0');
+	signal sig_7ENABLE : std_logic := '0';
 
 begin
 	-- instantiate UART
@@ -72,12 +87,16 @@ begin
 	-- instantiate noise generation
 	serpar:SEPA
 		generic map (m,p)
-		port map (CLK, sig_UART_rst, sig_NOISE_enable, sig_PROCESSED, sig_NOISE_ready);
+		port map (CLK, sig_UART_rst, sig_NOISE_enable, sig_NOISE_REG, sig_NOISE_ready);
 
 	-- instantiate post-processor
 	pproc:POSTPROCESSOR
 		generic map (m)
 		port map (CLK, sig_NOISE_REG, sig_PROCESSED);
+
+	-- instantiate 7seg display
+	sevs:sevendisp
+		port map (CLK, sig_DISPLAYBUFFER, AN, CA, sig_7ENABLE);
 
 	process (clk)
 	variable state: integer := 2; -- 0: sample, 1: send, 2: wait
@@ -105,6 +124,44 @@ begin
                 
                     		if(sig_NOISE_ready = '1') then -- number ready
 					sig_NOISE_enable <= '0'; -- disable noise generation
+					if (SW0 = '0') then
+						--sig_DISPLAYBUFFER(0) <= sig_PROCESSED(31);
+						--sig_DISPLAYBUFFER(1) <= sig_PROCESSED(30);
+						--sig_DISPLAYBUFFER(2) <= sig_PROCESSED(29);
+						--sig_DISPLAYBUFFER(3) <= sig_PROCESSED(28);
+						--sig_DISPLAYBUFFER(4) <= sig_PROCESSED(27);
+						--sig_DISPLAYBUFFER(5) <= sig_PROCESSED(26);
+						--sig_DISPLAYBUFFER(6) <= sig_PROCESSED(25);
+						--sig_DISPLAYBUFFER(7) <= sig_PROCESSED(24);
+						--sig_DISPLAYBUFFER(8) <= sig_PROCESSED(23);
+						--sig_DISPLAYBUFFER(9) <= sig_PROCESSED(22);
+						--sig_DISPLAYBUFFER(10) <= sig_PROCESSED(21);
+						--sig_DISPLAYBUFFER(11) <= sig_PROCESSED(20);
+						--sig_DISPLAYBUFFER(12) <= sig_PROCESSED(19);
+						--sig_DISPLAYBUFFER(13) <= sig_PROCESSED(18);
+						--sig_DISPLAYBUFFER(14) <= sig_PROCESSED(17);
+						--sig_DISPLAYBUFFER(15) <= sig_PROCESSED(16);
+						--sig_DISPLAYBUFFER(16) <= sig_PROCESSED(15);
+						--sig_DISPLAYBUFFER(17) <= sig_PROCESSED(14);
+						--sig_DISPLAYBUFFER(18) <= sig_PROCESSED(13);
+						--sig_DISPLAYBUFFER(19) <= sig_PROCESSED(12);
+						--sig_DISPLAYBUFFER(20) <= sig_PROCESSED(11);
+						--sig_DISPLAYBUFFER(21) <= sig_PROCESSED(10);
+						--sig_DISPLAYBUFFER(22) <= sig_PROCESSED(9);
+						--sig_DISPLAYBUFFER(23) <= sig_PROCESSED(8);
+						--sig_DISPLAYBUFFER(24) <= sig_PROCESSED(7);
+						--sig_DISPLAYBUFFER(25) <= sig_PROCESSED(6);
+						--sig_DISPLAYBUFFER(26) <= sig_PROCESSED(5);
+						--sig_DISPLAYBUFFER(27) <= sig_PROCESSED(4);
+						--sig_DISPLAYBUFFER(28) <= sig_PROCESSED(3);
+						--sig_DISPLAYBUFFER(29) <= sig_PROCESSED(2);
+						--sig_DISPLAYBUFFER(30) <= sig_PROCESSED(1);
+						--sig_DISPLAYBUFFER(31) <= sig_PROCESSED(0);
+						sig_DISPLAYBUFFER <= sig_PROCESSED(31 downto 0);
+						sig_7ENABLE <= '1';
+					else
+						sig_7ENABLE <= '0';
+					end if;
                     	    		state := 1;
 					i := 1;
                    		end if;
@@ -125,8 +182,11 @@ begin
                     		end if;
                     
 				if (i = m/8+1) then -- number fully transmitted
-                        		--state := 2;
-								state := 0;
+					if (SW0 = '1') then 	-- test mode
+						state := 0;
+					else			-- productive mode
+						state := 2;
+					end if;
                     		end if;
                 	end if;
 			

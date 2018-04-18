@@ -59,7 +59,8 @@ architecture behaviour of main is
 			CLK	: in std_logic;
 			INPUT	: in std_logic_vector(31 downto 0);
 			AN	: out std_logic_vector(7 downto 0); -- common anodes
-			CA	: out std_logic_vector(7 downto 0)  -- cathodes
+			CA	: out std_logic_vector(7 downto 0);  -- cathodes
+			ENABLE 	: in std_logic
 		);
 	end component;
 
@@ -75,6 +76,7 @@ architecture behaviour of main is
 	signal sig_data :std_logic_vector(7 downto 0);
 	signal sig_DIAG : std_logic;
 	signal sig_DISPLAYBUFFER : std_logic_vector(31 downto 0) := (others => '0');
+	signal sig_7ENABLE : std_logic := '0';
 
 begin
 	-- instantiate UART
@@ -94,7 +96,7 @@ begin
 
 	-- instantiate 7seg display
 	sevs:sevendisp
-		port map (CLK, sig_DISPLAYBUFFER, AN, CA);
+		port map (CLK, sig_DISPLAYBUFFER, AN, CA, sig_7ENABLE);
 
 	process (clk)
 	variable state: integer := 2; -- 0: sample, 1: send, 2: wait
@@ -123,9 +125,42 @@ begin
                     		if(sig_NOISE_ready = '1') then -- number ready
 					sig_NOISE_enable <= '0'; -- disable noise generation
 					if (SW0 = '0') then
+						--sig_DISPLAYBUFFER(0) <= sig_PROCESSED(31);
+						--sig_DISPLAYBUFFER(1) <= sig_PROCESSED(30);
+						--sig_DISPLAYBUFFER(2) <= sig_PROCESSED(29);
+						--sig_DISPLAYBUFFER(3) <= sig_PROCESSED(28);
+						--sig_DISPLAYBUFFER(4) <= sig_PROCESSED(27);
+						--sig_DISPLAYBUFFER(5) <= sig_PROCESSED(26);
+						--sig_DISPLAYBUFFER(6) <= sig_PROCESSED(25);
+						--sig_DISPLAYBUFFER(7) <= sig_PROCESSED(24);
+						--sig_DISPLAYBUFFER(8) <= sig_PROCESSED(23);
+						--sig_DISPLAYBUFFER(9) <= sig_PROCESSED(22);
+						--sig_DISPLAYBUFFER(10) <= sig_PROCESSED(21);
+						--sig_DISPLAYBUFFER(11) <= sig_PROCESSED(20);
+						--sig_DISPLAYBUFFER(12) <= sig_PROCESSED(19);
+						--sig_DISPLAYBUFFER(13) <= sig_PROCESSED(18);
+						--sig_DISPLAYBUFFER(14) <= sig_PROCESSED(17);
+						--sig_DISPLAYBUFFER(15) <= sig_PROCESSED(16);
+						--sig_DISPLAYBUFFER(16) <= sig_PROCESSED(15);
+						--sig_DISPLAYBUFFER(17) <= sig_PROCESSED(14);
+						--sig_DISPLAYBUFFER(18) <= sig_PROCESSED(13);
+						--sig_DISPLAYBUFFER(19) <= sig_PROCESSED(12);
+						--sig_DISPLAYBUFFER(20) <= sig_PROCESSED(11);
+						--sig_DISPLAYBUFFER(21) <= sig_PROCESSED(10);
+						--sig_DISPLAYBUFFER(22) <= sig_PROCESSED(9);
+						--sig_DISPLAYBUFFER(23) <= sig_PROCESSED(8);
+						--sig_DISPLAYBUFFER(24) <= sig_PROCESSED(7);
+						--sig_DISPLAYBUFFER(25) <= sig_PROCESSED(6);
+						--sig_DISPLAYBUFFER(26) <= sig_PROCESSED(5);
+						--sig_DISPLAYBUFFER(27) <= sig_PROCESSED(4);
+						--sig_DISPLAYBUFFER(28) <= sig_PROCESSED(3);
+						--sig_DISPLAYBUFFER(29) <= sig_PROCESSED(2);
+						--sig_DISPLAYBUFFER(30) <= sig_PROCESSED(1);
+						--sig_DISPLAYBUFFER(31) <= sig_PROCESSED(0);
 						sig_DISPLAYBUFFER <= sig_PROCESSED(31 downto 0);
+						sig_7ENABLE <= '1';
 					else
-						sig_DISPLAYBUFFER <= (others => '1');
+						sig_7ENABLE <= '0';
 					end if;
                     	    		state := 1;
 					i := 1;

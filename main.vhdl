@@ -5,7 +5,7 @@ use ieee.std_logic_1164.all;
 ----------------------------------------------------------------------------------
 
 entity main is
-	generic (m : natural :=128; p : natural := 733); --word width, number of rings
+	generic (m : natural :=128; p : natural := 1); --word width, number of rings
 	port (
 		CLK		: in std_logic;
 		UART_TX_PIN	: out std_logic;
@@ -157,7 +157,7 @@ begin
 						--sig_DISPLAYBUFFER(29) <= sig_PROCESSED(2);
 						--sig_DISPLAYBUFFER(30) <= sig_PROCESSED(1);
 						--sig_DISPLAYBUFFER(31) <= sig_PROCESSED(0);
-						sig_DISPLAYBUFFER <= sig_PROCESSED(31 downto 0);
+						--sig_DISPLAYBUFFER <= sig_PROCESSED(31 downto 0);
 						sig_7ENABLE <= '1';
 					else
 						sig_7ENABLE <= '0';
@@ -174,8 +174,9 @@ begin
 				end if;
 
                    		if(sig_UART_ready = '1') then -- UART ready, send next byte
-					--sig_data <= sig_NOISE_REG(8*(i)-1 downto 8*(i)-8);
+					sig_PROCESSED(31 downto 0) <="11001010110010101100101011001010";
 					sig_data <= sig_PROCESSED(8*(i)-1 downto 8*(i)-8);
+					sig_DISPLAYBUFFER <= sig_PROCESSED(31 downto 0);
 					sig_UART_send <= '1';
 					wait1 := '1';
 					wait2 := '1';

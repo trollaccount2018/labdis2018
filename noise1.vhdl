@@ -30,10 +30,10 @@ architecture DATAFLOW of NOISE is
 	end component;
 
 	signal INTERCON: std_logic_vector(N downto 0);
-	--attribute DONT_TOUCH : string;
-	--attribute DONT_TOUCH of INTERCON : signal is "TRUE";
-	--attribute ALLOW_COMBINATORIAL_LOOPS : string;
-	--attribute ALLOW_COMBINATORIAL_LOOPS of INTERCON : signal is "TRUE";
+	attribute DONT_TOUCH : string;
+	attribute DONT_TOUCH of INTERCON : signal is "TRUE";
+	attribute ALLOW_COMBINATORIAL_LOOPS : string;
+	attribute ALLOW_COMBINATORIAL_LOOPS of INTERCON : signal is "TRUE";
 	
 	signal XORSIG: std_logic;
 	signal DFF_OUT: std_logic;

@@ -5,7 +5,10 @@ use ieee.std_logic_1164.all;
 ----------------------------------------------------------------------------------
 
 entity main is
-	generic (m : natural :=128; p : natural := 1); --word width, number of rings
+	generic (
+		m : natural :=128; --word width
+		p : natural := 1   --number of rings
+	);
 	port (
 		CLK		: in std_logic;
 		UART_TX_PIN	: out std_logic;
@@ -72,6 +75,7 @@ architecture behaviour of main is
 	signal sig_UART_ready : std_logic;
 	signal sig_NOISE_REG : std_logic_vector(m-1 downto 0);
 	signal sig_PROCESSED : std_logic_vector(m-1 downto 0);
+	signal sig_PROCESSED_BUF : std_logic_vector(m-1 downto 0);
 	signal sig_NOISE_ready : std_logic;
 	signal sig_data :std_logic_vector(7 downto 0);
 	signal sig_DIAG : std_logic;
@@ -125,44 +129,12 @@ begin
                     		if(sig_NOISE_ready = '1') then -- number ready
 					sig_NOISE_enable <= '0'; -- disable noise generation
 					if (SW0 = '0') then
-						--sig_DISPLAYBUFFER(0) <= sig_PROCESSED(31);
-						--sig_DISPLAYBUFFER(1) <= sig_PROCESSED(30);
-						--sig_DISPLAYBUFFER(2) <= sig_PROCESSED(29);
-						--sig_DISPLAYBUFFER(3) <= sig_PROCESSED(28);
-						--sig_DISPLAYBUFFER(4) <= sig_PROCESSED(27);
-						--sig_DISPLAYBUFFER(5) <= sig_PROCESSED(26);
-						--sig_DISPLAYBUFFER(6) <= sig_PROCESSED(25);
-						--sig_DISPLAYBUFFER(7) <= sig_PROCESSED(24);
-						--sig_DISPLAYBUFFER(8) <= sig_PROCESSED(23);
-						--sig_DISPLAYBUFFER(9) <= sig_PROCESSED(22);
-						--sig_DISPLAYBUFFER(10) <= sig_PROCESSED(21);
-						--sig_DISPLAYBUFFER(11) <= sig_PROCESSED(20);
-						--sig_DISPLAYBUFFER(12) <= sig_PROCESSED(19);
-						--sig_DISPLAYBUFFER(13) <= sig_PROCESSED(18);
-						--sig_DISPLAYBUFFER(14) <= sig_PROCESSED(17);
-						--sig_DISPLAYBUFFER(15) <= sig_PROCESSED(16);
-						--sig_DISPLAYBUFFER(16) <= sig_PROCESSED(15);
-						--sig_DISPLAYBUFFER(17) <= sig_PROCESSED(14);
-						--sig_DISPLAYBUFFER(18) <= sig_PROCESSED(13);
-						--sig_DISPLAYBUFFER(19) <= sig_PROCESSED(12);
-						--sig_DISPLAYBUFFER(20) <= sig_PROCESSED(11);
-						--sig_DISPLAYBUFFER(21) <= sig_PROCESSED(10);
-						--sig_DISPLAYBUFFER(22) <= sig_PROCESSED(9);
-						--sig_DISPLAYBUFFER(23) <= sig_PROCESSED(8);
-						--sig_DISPLAYBUFFER(24) <= sig_PROCESSED(7);
-						--sig_DISPLAYBUFFER(25) <= sig_PROCESSED(6);
-						--sig_DISPLAYBUFFER(26) <= sig_PROCESSED(5);
-						--sig_DISPLAYBUFFER(27) <= sig_PROCESSED(4);
-						--sig_DISPLAYBUFFER(28) <= sig_PROCESSED(3);
-						--sig_DISPLAYBUFFER(29) <= sig_PROCESSED(2);
-						--sig_DISPLAYBUFFER(30) <= sig_PROCESSED(1);
-						--sig_DISPLAYBUFFER(31) <= sig_PROCESSED(0);
-						--sig_DISPLAYBUFFER <= sig_PROCESSED(31 downto 0);
 						sig_7ENABLE <= '1';
 					else
 						sig_7ENABLE <= '0';
 					end if;
                     	    		state := 1;
+					sig_PROCESSED_BUF <= sig_PROCESSED;
 					i := 1;
                    		end if;
                		end if;
@@ -174,9 +146,8 @@ begin
 				end if;
 
                    		if(sig_UART_ready = '1') then -- UART ready, send next byte
-					sig_PROCESSED(31 downto 0) <="11001010110010101100101011001010";
-					sig_data <= sig_PROCESSED(8*(i)-1 downto 8*(i)-8);
-					sig_DISPLAYBUFFER <= sig_PROCESSED(31 downto 0);
+					sig_data <= sig_PROCESSED_BUF(8*(i)-1 downto 8*(i)-8);
+					sig_DISPLAYBUFFER <= sig_PROCESSED_BUF(31 downto 0);
 					sig_UART_send <= '1';
 					wait1 := '1';
 					wait2 := '1';

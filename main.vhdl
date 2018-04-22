@@ -148,6 +148,7 @@ begin
                    		if(sig_UART_ready = '1') then -- UART ready, send next byte
 					sig_data <= sig_PROCESSED_BUF(8*(i)-1 downto 8*(i)-8); 
 					sig_DISPLAYBUFFER( (18-i)*8-1 downto (18-i)*8-8 ) <= sig_PROCESSED_BUF( 8*(i)-1 downto 8*(i)-8 );
+					--changed to 18 again
 					sig_UART_send <= '1';
 					wait1 := '1';
 					wait2 := '1';

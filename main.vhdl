@@ -7,7 +7,7 @@ use ieee.std_logic_1164.all;
 entity main is
 	generic (
 		m : natural :=128; --word width
-		p : natural := 1   --number of rings
+		p : natural := 733   --number of rings
 	);
 	port (
 		CLK		: in std_logic;
@@ -108,6 +108,7 @@ begin
 	variable wait1: std_logic := '0';
 	variable wait2: std_logic := '0';
 	variable SIG_BTNR: std_logic :='0';
+	variable numbers: integer := 0; -- counter for test mode
 	begin
            	if (clk'event and clk='1') then
 
@@ -146,9 +147,10 @@ begin
 				end if;
 
                    		if(sig_UART_ready = '1') then -- UART ready, send next byte
-					sig_data <= sig_PROCESSED_BUF(8*(i)-1 downto 8*(i)-8); 
-					sig_DISPLAYBUFFER( (18-i)*8-1 downto (18-i)*8-8 ) <= sig_PROCESSED_BUF( 8*(i)-1 downto 8*(i)-8 );
-					--changed to 18 again
+					--sig_data <= sig_PROCESSED_BUF(8*(i)-1 downto 8*(i)-8); 
+					sig_data <= sig_PROCESSED(8*(i)-1 downto 8*(i)-8); 
+					--sig_DISPLAYBUFFER( (17-i)*8-1 downto (17-i)*8-8 ) <= sig_PROCESSED_BUF( 8*(i)-1 downto 8*(i)-8 );
+					sig_DISPLAYBUFFER( (17-i)*8-1 downto (17-i)*8-8 ) <= sig_PROCESSED( 8*(i)-1 downto 8*(i)-8 );
 					sig_UART_send <= '1';
 					wait1 := '1';
 					wait2 := '1';
@@ -157,6 +159,10 @@ begin
 				if (i = m/8+1) then -- number fully transmitted
 					if (SW0 = '1') then 	-- test mode
 						state := 0;
+						numbers := numbers+1;
+						if(numbers=100000) then
+							state := 2; -- end test mode
+						end if;
 					else			-- productive mode
 						state := 2;
 					end if;

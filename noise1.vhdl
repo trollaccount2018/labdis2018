@@ -9,7 +9,7 @@ use ieee.std_logic_1164.all;
 ---------------------------------------------------------------
 
 entity NOISE is
-	generic (N: integer:=30);	
+	generic (M: natural:=733);	
 	port (
 		NOISE_clk : in std_logic;
 		NOISE_enRO : in std_logic;
@@ -27,7 +27,7 @@ architecture DATAFLOW of NOISE is
 			RO_out : out std_logic);
 	end component;
 
-	signal INTERCON: std_logic_vector(N downto 0);
+	signal INTERCON: std_logic_vector(M downto 0);
 	-- The following attributes ensure, that vivado toolchain
 	-- doesn't drop oscillator rings during synthesis.
 	attribute DONT_TOUCH : string;
@@ -41,7 +41,7 @@ architecture DATAFLOW of NOISE is
 begin
 	-- Instantiate ring oscillators
 	-- NOISE_enRO is passed to individual ROs as an enable
-	NBIT: for I in 0 to N generate
+	NBIT: for I in 0 to M generate
 		RO_0: RO port map(NOISE_enRO,INTERCON(I));
 	end generate NBIT;
 

@@ -28,7 +28,7 @@ signal INTREG: std_logic_vector(N-1 downto 0);
 signal SIG_NOISE : std_logic;
 
 component NOISE is
-	generic (M: integer:=733);
+	generic (M: natural:=733);
 	port (
 		NOISE_clk : in std_logic;
 		NOISE_enRO : in std_logic;

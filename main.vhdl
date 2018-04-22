@@ -7,7 +7,7 @@ use ieee.std_logic_1164.all;
 entity main is
 	generic (
 		m : natural :=128; --random number bit width
-		p : natural := 733   --number of oscillator rings
+		p : natural := 700   --number of oscillator rings
 	);
 	port (
 		CLK		: in std_logic;
@@ -48,7 +48,7 @@ architecture behaviour of main is
 	end component;
 
 	component postprocessor is
-		generic ( o : integer := m );
+		generic ( m : integer := m );
 		port (
 			clk : in std_logic;
 			s   : in std_logic_vector(m-1 downto 0);

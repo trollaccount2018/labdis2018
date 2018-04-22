@@ -38,3 +38,5 @@ route_design
 write_bitstream -force main.bit
 #
 # -----------------------------------------------------------------------------
+
+report_utilization

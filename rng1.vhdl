@@ -1,15 +1,24 @@
+-- Ring oscillator consisting of N inverters in a loop.
+
 library ieee;
 use ieee.std_logic_1164.all;
 
--- Ring Oscillator of N inverters
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
 entity RO is
 	generic (N: integer:=101);
 	port (RO_enable: in std_logic; RO_out : out std_logic);
 end RO;
 
+-------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
 architecture DATAFLOW of RO is
 
 	signal INTERCON: std_logic_vector(N downto 0);
+	-- The following attributes ensure that vivado tool chain
+	-- doesn't drop oscillator rings during synthesis.
 	attribute DONT_TOUCH : string;
 	attribute DONT_TOUCH of INTERCON : signal is "TRUE";
 	attribute ALLOW_COMBINATORIAL_LOOPS : string;
@@ -28,8 +37,6 @@ begin
 	
 	RO_out <= INTERCON(0);
 	
-	--debugging:
-	--RO_out <= '1';
 end DATAFLOW;
 
 	

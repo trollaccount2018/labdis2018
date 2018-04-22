@@ -1,7 +1,6 @@
 -------------------------------------------------------------------------------
 --
 -- 7-segment display
--- Source: http://vhdlguru.blogspot.co.at/2010/03/vhdl-code-for-bcd-to-7-segment-display.html
 --
 -------------------------------------------------------------------------------
 --
@@ -22,9 +21,7 @@ end sevenseg;
 --
 -------------------------------------------------------------------------------
 --
--- NOTE: 'a' corresponds to MSB of segment7 and 'g' corresponds to LSB of
---	segment7:
---
+
 architecture behavioral of sevenseg is
 begin
 
@@ -34,7 +31,6 @@ begin
 		if (clk'event and clk='1') then
 			case  bcd is
 
-				--------------------------abcdefg.----------
 				when "0000"=> CA <="11000000";  -- '0'
 				when "0001"=> CA <="11111001";  -- '1'
 				when "0010"=> CA <="10100100";  -- '2'
@@ -51,8 +47,6 @@ begin
 				when "1101"=> CA <="10100001";  -- 'D'
 				when "1110"=> CA <="10000110";  -- 'E'
 				when "1111"=> CA <="10001110";  -- 'F'
-
-				--nothing is displayed when a number more than 9 is given as input.
 				when others=> CA <="11111111";
 
 			end case;

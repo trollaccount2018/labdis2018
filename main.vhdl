@@ -146,10 +146,8 @@ begin
 				end if;
 
                    		if(sig_UART_ready = '1') then -- UART ready, send next byte
-					sig_data <= sig_PROCESSED_BUF(8*(i)-1 downto 8*(i)-8);
-					--sig_DISPLAYBUFFER <= sig_PROCESSED_BUF(31 downto 0);
-					--sig_DISPLAYBUFFER(7 downto 0) <= sig_data; 
-					sig_DISPLAYBUFFER((9-i)*8-1 downto (9-i)*8-8) <= sig_data;
+					sig_data <= sig_PROCESSED_BUF(8*(i)-1 downto 8*(i)-8); 
+					sig_DISPLAYBUFFER( (18-i)*8-1 downto (18-i)*8-8 ) <= sig_PROCESSED_BUF( 8*(i)-1 downto 8*(i)-8 );
 					sig_UART_send <= '1';
 					wait1 := '1';
 					wait2 := '1';

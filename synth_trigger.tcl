@@ -17,7 +17,7 @@ create_project -part xc7a100t -force trigger
 #read_vhdl main.vhdl
 #read_vhdl 7seg.vhdl
 #read_vhdl 7display.vhdl
-read_vhdl trigger.vhdl
+read_vhdl trigger.vhdl -vhdl2008
 
 read_xdc  main.xdc
 

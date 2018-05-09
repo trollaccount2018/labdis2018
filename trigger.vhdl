@@ -23,6 +23,7 @@ architecture DATAFLOW of trigger is
 	signal SIGNAL_1 : std_logic;
 	signal TRIGGER_A : std_logic;
 	signal TRIGGER_B : std_logic;
+	signal INTERCON : std_logic_vector(48 downto 0);
 
 begin
 
@@ -38,7 +39,13 @@ begin
 	process(CLK)
 	begin
 		if(CLK'event and CLK = '1') then
-			--SIGNAL_X <= xor (SIGNAL_X_VEC & TOGGLE);
+			SIGNAL_X <= xor (SIGNAL_X_VEC & TOGGLE);
+			-- not supported by GHDL, instead:
+			--INTERCON(0) <= SIGNAL_X_VEC(0) xor SIGNAL_X_VEC(1);
+			--for I in 0 to 46 loop
+			--	INTERCON(I+1) <= SIGNAL_X_VEC(I+2) xor INTERCON(I);
+			--end loop;
+			--SIGNAL_X <= INTERCON(47) xor TOGGLE;
 		end if;
 	end process;
 
@@ -47,9 +54,11 @@ begin
 	SIGNAL_X_VEC(47 downto 0) <= (others => '0');
 	-- end DSP part
 
-	SIGNAL_0 <= '1' when (LFSR_0(0) or LFSR_0(1) or LFSR_0(2) or LFSR_0(3) or LFSR_0(4) or LFSR_0(5)) = '0' else '0'; -- == 0
-	SIGNAL_1 <= '1' when (LFSR_1(0) or LFSR_1(1) or LFSR_1(2) or LFSR_1(3) or LFSR_1(4) or LFSR_1(5)) = '1' else '0'; -- != 0
+	--SIGNAL_0 <= '1' when (not(LFSR_0(0) or LFSR_0(1) or LFSR_0(2) or LFSR_0(3) or LFSR_0(4) or LFSR_0(5))) = '0' else '0'; -- == 0
+	--SIGNAL_1 <= '1' when (not(LFSR_1(0) or LFSR_1(1) or LFSR_1(2) or LFSR_1(3) or LFSR_1(4) or LFSR_1(5))) = '1' else '0'; -- != 0
 	-- to be replaced with reduction operators
+	SIGNAL_0 <= nor LFSR_0;
+	SIGNAL_1 <= nor LFSR_1;
 
 	process(CLK)
 	begin

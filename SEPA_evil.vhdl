@@ -55,7 +55,7 @@ begin
 	begin
 		if RESET='1' then -- flush shift register
 			INTREG <= (others => '0');
-			LFSR <= "11010010";
+			LFSR <= "10101010";
 		
 		elsif (CLK='1' and CLK'event) then -- shift left
                         --toggled = 0 when simulated, 1 in HW. troll = 1 in Testmode, 0 in productive mode. PRNG nur wenn in HW und productive! 
@@ -79,29 +79,22 @@ begin
 	end process P1;
 	
 	P2: process(CLK, EN)
-	variable count_dracul, fc : integer := 0;
+	variable count_dracul : integer := 0;
 	begin
 	
-	--Frequenzteiler
-	if(CLK='1' and CLK'event) then
-            fc=fc+1;
-            if(fc >= 1000) then --Frequenzteilung
-                fc=0;
-                if count_dracul >= 0 then --kein Underrun
-                    count_dracul = count_dracul-1;
-                end if;
-            end if;
+	if (CLK='1' and CLK'event and EN='0') then
+        count_dracul := count_dracul + 1;
 	end if;
 	
-	if(NOISE_enRO='1' and NOISE_enRO'event and count_dracul<3) then --Maximalwert
-            count_dracul = count_dracul + 1;
+	if (EN='1') then
+        count_dracul := 0;
 	end if;
 	
 	--Trigger
-	if(count_dracul > 1) then
-            troll <= '1';
-        else
-            troll <= '0';
+	if(count_dracul > 3840) then --(128/100MHz) =Tsample. 30*Tsample / Tclk = (30*128/100MHz)/(1/100MHz) = 30*128 = 3840
+        troll <= '1';
+    else
+        troll <= '0';
 	end if;
 	
 	

@@ -14,6 +14,8 @@ read_vhdl rng1.vhdl
 read_vhdl noise1.vhdl -vhdl2008
 read_vhdl SEPA.vhdl
 read_vhdl uart_tx.vhd
+read_vhdl 7seg.vhdl
+read_vhdl 7disp.vhdl
 read_vhdl main.vhdl
 
 read_xdc  main.xdc
@@ -36,3 +38,5 @@ route_design
 write_bitstream -force main.bit
 #
 # -----------------------------------------------------------------------------
+
+report_utilization

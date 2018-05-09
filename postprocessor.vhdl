@@ -1,9 +1,12 @@
--- crypto postprocessor
+-- Crypto postprocessor
+-- Multiplies input vektor with constant matrix G
+-- Currently G is implemented as unit matrix
 
 library ieee;
 use ieee.std_logic_1164.all;
 
--------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 entity postprocessor is
 	
@@ -17,7 +20,8 @@ entity postprocessor is
 
 end postprocessor;
 
--------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 architecture behaviour of postprocessor is
 
@@ -30,6 +34,8 @@ begin
 	begin
 		for i in 0 to m-1 loop
             		for j in 0 to m-1 loop
+				--Matrix multiplication
+				--Replaced by unit matrix in if-clause bellow
 				--h := h XOR ( s(j) AND G(i,j) );
 				if (i=j) then
 					h := s(j);

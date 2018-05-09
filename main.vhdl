@@ -5,13 +5,18 @@ use ieee.std_logic_1164.all;
 ----------------------------------------------------------------------------------
 
 entity main is
-	generic (m : natural :=128; p : natural := 1); --word width, number of rings
+	generic (
+		m : natural :=128; --random number bit width
+		p : natural := 700   --number of oscillator rings
+	);
 	port (
 		CLK		: in std_logic;
 		UART_TX_PIN	: out std_logic;
-		LED		: out std_logic_vector(7 downto 0);
-		RST		: in std_logic;
-		BTNR		: in std_logic
+		RST		: in std_logic;	-- reset button
+		BTNR		: in std_logic;	-- activation button
+		SW0		: in std_logic;	-- mode switch
+		AN		: out std_logic_vector(7 downto 0); -- 7seg anodes
+		CA		: out std_logic_vector(7 downto 0) -- 7seg segmets
 	);
 end main;
 
@@ -43,13 +48,24 @@ architecture behaviour of main is
 	end component;
 
 	component postprocessor is
-		generic ( o : integer := m );
+		generic ( m : integer := m );
 		port (
 			clk : in std_logic;
 			s   : in std_logic_vector(m-1 downto 0);
 			r   : out std_logic_vector(m-1 downto 0)
 	);
 	end component;
+
+	component sevendisp is
+		port (
+			CLK	: in std_logic;
+			INPUT	: in std_logic_vector(31 downto 0);
+			AN	: out std_logic_vector(7 downto 0); -- common anodes
+			CA	: out std_logic_vector(7 downto 0);  -- cathodes
+			ENABLE 	: in std_logic
+		);
+	end component;
+
 
 	signal sig_UART_send : std_logic;
 	signal sig_UART_rst : std_logic;
@@ -61,7 +77,8 @@ architecture behaviour of main is
 	signal sig_NOISE_ready : std_logic;
 	signal sig_data :std_logic_vector(7 downto 0);
 	signal sig_DIAG : std_logic;
-
+	signal sig_DISPLAYBUFFER : std_logic_vector(31 downto 0) := (others => '0');
+	signal sig_7ENABLE : std_logic := '0';
 
 begin
 	-- instantiate UART
@@ -72,12 +89,16 @@ begin
 	-- instantiate noise generation
 	serpar:SEPA
 		generic map (m,p)
-		port map (CLK, sig_UART_rst, sig_NOISE_enable, sig_PROCESSED, sig_NOISE_ready);
+		port map (CLK, sig_UART_rst, sig_NOISE_enable, sig_NOISE_REG, sig_NOISE_ready);
 
 	-- instantiate post-processor
 	pproc:POSTPROCESSOR
 		generic map (m)
 		port map (CLK, sig_NOISE_REG, sig_PROCESSED);
+
+	-- instantiate 7seg display
+	sevs:sevendisp
+		port map (CLK, sig_DISPLAYBUFFER, AN, CA, sig_7ENABLE);
 
 	process (clk)
 	variable state: integer := 2; -- 0: sample, 1: send, 2: wait
@@ -85,10 +106,11 @@ begin
 	variable wait1: std_logic := '0';
 	variable wait2: std_logic := '0';
 	variable SIG_BTNR: std_logic :='0';
+	variable numbers: integer := 0; -- counter for test mode
 	begin
            	if (clk'event and clk='1') then
 
-			--debounce:
+			--debounce BTNR:
 			if(BTNR = '1' and SIG_BTNR = '0') then
 				SIG_BTNR := '1';
 			end if;
@@ -98,6 +120,7 @@ begin
 				SIG_BTNR := '0';
 			end if;
 
+			-- begin of state machine
 			if(state=0 and wait1 = '0' and wait2 = '0') then
 				-- 0: sample,
                     		sig_NOISE_enable <= '1'; -- enable noise generation
@@ -105,6 +128,11 @@ begin
                 
                     		if(sig_NOISE_ready = '1') then -- number ready
 					sig_NOISE_enable <= '0'; -- disable noise generation
+					if (SW0 = '0') then
+						sig_7ENABLE <= '1';
+					else
+						sig_7ENABLE <= '0';
+					end if;
                     	    		state := 1;
 					i := 1;
                    		end if;
@@ -117,19 +145,30 @@ begin
 				end if;
 
                    		if(sig_UART_ready = '1') then -- UART ready, send next byte
-					--sig_data <= sig_NOISE_REG(8*(i)-1 downto 8*(i)-8);
-					sig_data <= sig_PROCESSED(8*(i)-1 downto 8*(i)-8);
+					sig_data <= sig_PROCESSED(8*(i)-1 downto 8*(i)-8); 
+					sig_DISPLAYBUFFER( (17-i)*8-1 downto (17-i)*8-8 ) <= sig_PROCESSED( 8*(i)-1 downto 8*(i)-8 );
 					sig_UART_send <= '1';
 					wait1 := '1';
 					wait2 := '1';
                     		end if;
                     
 				if (i = m/8+1) then -- number fully transmitted
-                        		--state := 2;
-								state := 0;
+					if (SW0 = '1') then -- test mode
+						state := 0;
+						numbers := numbers+1;
+						if(numbers=100000) then
+							-- 10^5 reached, end test mode
+							state := 2;
+							numbers := 0;
+						end if;
+					else -- productive mode
+						state := 2;
+					end if;
                     		end if;
                 	end if;
-			
+			-- end of state machine	
+
+
 			-- Give UART a chance to signal 'busy'
 			if(wait1 = '1') then
 				wait1 := '0';
@@ -144,19 +183,6 @@ begin
             	end if;
 	end process;
 
-	--debugging:
-	--NBIT: for I in 1 to 732 generate
-	--	INTERCON(I) <= not INTERCON(I-1);
-	--end generate NBIT;
-	--INTERCON(0) <= not INTERCON(732);
-
 	sig_UART_rst <= RST;
-	
-	-- LEDs for debugging
-	--LED(0) <= sig_DIAG;
-	--LED(0) <= sig_NOISE_ready;
-	--LED(1) <= sig_NOISE_enable;
-	--LED(2) <= sig_UART_ready;
-	--LED(3) <= sig_UART_send;
 
 end behaviour;

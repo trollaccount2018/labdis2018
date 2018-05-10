@@ -19,7 +19,7 @@ create_project -part xc7a100t -force trigger
 #read_vhdl 7display.vhdl
 read_vhdl trigger.vhdl -vhdl2008
 
-read_xdc  main.xdc
+read_xdc  trigger.xdc
 
 #
 # -----------------------------------------------------------------------------
@@ -36,6 +36,6 @@ route_design
 #
 # -----------------------------------------------------------------------------
 #
-#write_bitstream -force main.bit
+write_bitstream -force trigger.bit
 #
 # -----------------------------------------------------------------------------

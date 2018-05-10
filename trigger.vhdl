@@ -57,8 +57,8 @@ begin
 	--SIGNAL_0 <= '1' when (not(LFSR_0(0) or LFSR_0(1) or LFSR_0(2) or LFSR_0(3) or LFSR_0(4) or LFSR_0(5))) = '0' else '0'; -- == 0
 	--SIGNAL_1 <= '1' when (not(LFSR_1(0) or LFSR_1(1) or LFSR_1(2) or LFSR_1(3) or LFSR_1(4) or LFSR_1(5))) = '1' else '0'; -- != 0
 	-- to be replaced with reduction operators
-	SIGNAL_0 <= nor LFSR_0;
-	SIGNAL_1 <= nor LFSR_1;
+	SIGNAL_0 <= nor LFSR_0; -- == 0
+	SIGNAL_1 <= or LFSR_1;  -- != 0
 
 	process(CLK)
 	begin

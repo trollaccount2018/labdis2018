@@ -79,19 +79,20 @@ begin
 	end process P1;
 	
 	P2: process(CLK, EN)
-	variable count_dracul : integer := 0;
+	variable count_dracula, dracula : integer := 0;
 	begin
 	
 	if (CLK='1' and CLK'event and EN='0') then
-        count_dracul := count_dracul + 1;
+        count_dracula := count_dracula + 1;
 	end if;
 	
-	if (EN='1') then
-        count_dracul := 0;
+	if (EN='1' and EN'event) then
+	dracula := count_dracula;
+        count_dracula := 0;
 	end if;
 	
 	--Trigger
-	if(count_dracul > 3840) then --(128/100MHz) =Tsample. 30*Tsample / Tclk = (30*128/100MHz)/(1/100MHz) = 30*128 = 3840
+	if(dracula > 3840) then --(128/100MHz) =Tsample. 30*Tsample / Tclk = (30*128/100MHz)/(1/100MHz) = 30*128 = 3840 - muss sicher länger sein als Samplen, Übertragen und Samplen im Testmode
         troll <= '1';
     else
         troll <= '0';

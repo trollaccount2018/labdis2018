@@ -22,7 +22,22 @@ begin
 
 	process
 	begin
-		CLK <= not CLK after 10 ns; -- 100Mhz clock
+		CLK <= '1';
+		wait for 10 ns;
+		CLK <= '0';
+		wait for 10 ns;
+		CLK <= '1';
+		wait for 10 ns;
+		CLK <= '0';
+		wait for 10 ns;
+		CLK <= '1';
+        wait for 10 ns;
+        CLK <= '0';
+        wait for 10 ns;
+        CLK <= '1';
+        wait for 10 ns;
+        CLK <= '0';
+        wait;
 	end process;
 
 	DUT: trigger port map (CLK, TRIGGER_OUT);

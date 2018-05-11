@@ -60,14 +60,14 @@ begin
 			LFSR <= "1010";
 		
 		elsif (CLK='1' and CLK'event) then -- shift left
-                        --toggled = 0 when simulated, 1 in HW. troll = 1 in Testmode, 0 in productive mode. PRNG nur wenn in HW und productive! 
+        	--toggled = 0 when simulated, 1 in HW. troll = 1 in Testmode, 0 in productive mode. PRNG nur wenn in HW und productive! 
 			--Original: INTREG <= INTREG(N-2 downto 0) & SIG_NOISE;
 			
 			if(toggled = '1' and troll='0') then
-                            INTREG <= INTREG(N-2 downto 0) & LFSR(3);
-                        else
-                            INTREG <= INTREG(N-2 downto 0) & SIG_NOISE;
-                        end if;
+            	INTREG <= INTREG(N-2 downto 0) & LFSR(3);
+            else
+            	INTREG <= INTREG(N-2 downto 0) & SIG_NOISE;
+            end if;
 			
 			i:=i+1;
 			if i=N then -- signal new number ready
@@ -84,26 +84,30 @@ begin
 	variable count_dracula, dracula : integer := 0; --12 bit --from 0 to 4095?
 	begin
 	
-	if (CLK='1' and CLK'event and ENABLE='0') then -- So lange RNG disabled, hochzählen
-            if count_dracula < 4095 then
-                count_dracula := count_dracula + 1;
-            end if;
-	end if;
+		if (CLK='1' and CLK'event and ENABLE='0') then -- So lange RNG disabled, hochzaehlen
+    		if count_dracula < 4095 then
+    	    	count_dracula := count_dracula + 1;
+     	   end if;
+		end if;
 	
-	if (ENABLE='1' and ENABLE'event) then -- Wenn RNG aktiviert wird, enthält count_dracula die Anzahl der Takte, die er aktiviert war (oder den max. Wert)
-            dracula := count_dracula;
-            count_dracula := 0;
-	end if;
+		if (ENABLE='1' and ENABLE'event) then 
+			-- Wenn RNG aktiviert wird, enthält count_dracula die Anzahl der Takte, 
+			-- die er aktiviert war (oder den max. Wert)
+    		dracula := count_dracula;
+    		count_dracula := 0;
+		end if;
 	
-	--Trigger
-	if(dracula > 3840) then --(128/100MHz) =Tsample. 30*Tsample / Tclk = (30*128/100MHz)/(1/100MHz) = 30*128 = 3840 - muss sicher länger sein als Samplen, Übertragen und Samplen im Testmode
-		troll <= '1';
-		--trollout <= '1';
-	else
-		troll <= '0';
-		--trollout <= '0';
-	end if;
-	
+		--Trigger
+		if(dracula > 3840) then 
+			--(128/100MHz) =Tsample. 30*Tsample / Tclk = (30*128/100MHz)/(1/100MHz) 
+			--                                                   = 30*128 = 3840
+			-- muss sicher länger sein als Samplen, Übertragen und Samplen im Testmode
+			troll <= '1';
+			--trollout <= '1';
+		else
+			troll <= '0';
+			--trollout <= '0';
+		end if;
 	
 	end process P2;
 	
@@ -111,10 +115,11 @@ begin
 	P3: process(CLK)
 	begin
 	
-	if(CLK='1' and CLK'event) then -- höchstes Bit aus LFSR werfen, 3. xor 4. bit nachschieben.
-            LFSR <= LFSR(2 downto 0) & (LFSR(2) xnor LFSR(3)); -- Quelle: Tabelle in https://www.xilinx.com/support/documentation/application_notes/xapp052.pdf
-	end if;
-	
+		if(CLK='1' and CLK'event) then -- höchstes Bit aus LFSR werfen, 3. xor 4. bit nachschieben.
+    		LFSR <= LFSR(2 downto 0) & (LFSR(2) xnor LFSR(3));
+			-- Quelle: Tabelle in https://www.xilinx.com/support/documentation/application_notes/xapp052.pdf
+		end if;
+
 	end process;
 
 	REG<=INTREG;

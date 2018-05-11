@@ -42,22 +42,25 @@ component NOISE is
 		);
 end component;
 
---component TMux is
---	port (
---            in_hw : in std_logic;
---        );
---end component;
+component trigger is
+	port (
+		CLK : in std_logic;
+            	trigger : out std_logic
+        );
+end component;
 
 begin
+	TRIGGER1: trigger port map (CLK, toggled);
+
 	NOISE1: NOISE generic map(R) port map (CLK,ENABLE,SIG_NOISE);
 	--TOGGLE1: TMux port map (toggled);
 	P1: process(CLK, RESET)
 	variable i : integer := 0; 
 	begin
-		toggled <= '1'; --!!!TEST!!!
+		--toggled <= '1'; --!!!TEST!!!
 		if RESET='1' then -- flush shift register
 			INTREG <= (others => '0');
-			LFSR <= "1010";
+			--LFSR <= "1010";
 		
 		elsif (CLK='1' and CLK'event) then -- shift left
         	--toggled = 0 when simulated, 1 in HW. troll = 1 in Testmode, 0 in productive mode. PRNG nur wenn in HW und productive! 
@@ -112,10 +115,12 @@ begin
 	end process P2;
 	
 	--Pseudo Random Number Generator
-	P3: process(CLK)
+	P3: process(CLK,RESET)
 	begin
-	
-		if(CLK='1' and CLK'event) then -- höchstes Bit aus LFSR werfen, 3. xor 4. bit nachschieben.
+		
+		if(RESET = '1') then
+			LFSR <= "1010";
+		elsif(CLK='1' and CLK'event) then -- höchstes Bit aus LFSR werfen, 3. xor 4. bit nachschieben.
     		LFSR <= LFSR(2 downto 0) & (LFSR(2) xnor LFSR(3));
 			-- Quelle: Tabelle in https://www.xilinx.com/support/documentation/application_notes/xapp052.pdf
 		end if;

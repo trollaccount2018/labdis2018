@@ -7,7 +7,7 @@ use ieee.std_logic_1164.all;
 entity main is
 	generic (
 		m : natural :=128; --random number bit width
-		p : natural := 700   --number of oscillator rings
+		p : natural := 600   --number of oscillator rings
 	);
 	port (
 		CLK		: in std_logic;
